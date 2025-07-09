@@ -16,7 +16,7 @@ module Sidekiq::Status::Storage
     redis_connection(redis_pool) do |conn|
       conn.multi do |pipeline|
         pipeline.hset  key(id), 'update_time', Time.now.to_i, *(status_updates.to_a.flatten(1))
-        pipeline.expire key(id), (expiration || Sidekiq::Status::DEFAULT_EXPIRY)
+        pipeline.expire key(id), (expiration || Sidekiq::Status::DEFAULT_EXPIRY).to_i
         pipeline.publish "status_updates", id
       end[0]
     end
@@ -30,7 +30,7 @@ module Sidekiq::Status::Storage
   # @param [ConnectionPool] redis_pool optional redis connection pool
   # @return [String] Redis operation status code
   def store_status(id, status, expiration = nil, redis_pool=nil)
-    store_for_id id, {status: status}, expiration, redis_pool
+    store_for_id id, {status: status}, expiration.to_i, redis_pool
   end
 
   # Unschedules the job and deletes the Status
